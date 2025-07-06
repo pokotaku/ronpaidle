@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+import threading
 
 class Facility:
     def __init__(self, name, base_cost, rate):
@@ -64,6 +65,13 @@ def reset_state(state):
         a.cost = a.costs[0] if hasattr(a, 'costs') else a.cost
     state['goal'].completed = False
 
+def auto_generate_coins():
+    while True:
+        time.sleep(1)
+        if 'coins' in st.session_state:
+            production = sum(f.total_production() for f in st.session_state['facilities'])
+            st.session_state['coins'] += production
+
 def main():
     st.title("モノクマクリッカー")
 
@@ -86,6 +94,8 @@ def main():
             ],
             'goal': Goal("ゲームクリア", 100000000, lambda: st.success("ゲームクリア！"))
         })
+
+        threading.Thread(target=auto_generate_coins, daemon=True).start()
 
     state = st.session_state
 
